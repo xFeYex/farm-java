@@ -2,6 +2,8 @@ package org.trpg.farming.production.service.Imp;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.trpg.farming.production.common.BizException;
+import org.trpg.farming.production.dto.EnvironmentViewResponse;
 import org.trpg.farming.production.dto.ProductionDashboardResponse;
 import org.trpg.farming.production.entity.CameraView;
 import org.trpg.farming.production.entity.EnvironmentSnapshot;
@@ -51,5 +53,34 @@ public class ProductionViewServiceImpl implements ProductionViewService {
                 environmentSnapshot,
                 cameraView
         );
+    }
+
+    @Override
+    public EnvironmentViewResponse getEnvironmentView(Long resourceId, Long userId) {
+        // 第三个流程是一个明确查询动作，这里校验失败就直接提示不能访问。
+        validateSubscriptionAccess(resourceId, userId);
+
+        EnvironmentSnapshot latestSnapshot =
+                environmentSnapshotRepository.findLatestByResourceId(resourceId);
+
+        if (latestSnapshot == null) {
+            return EnvironmentViewResponse.empty(resourceId, "当前还没有环境快照数据");
+        }
+
+        return EnvironmentViewResponse.fromSnapshot(resourceId, latestSnapshot);
+    }
+
+    /**
+     * 单独接口复用的访问校验逻辑。
+     * 只有订阅有效并且当前用户就是订阅人才允许查看监测数据。
+     */
+    private void validateSubscriptionAccess(Long resourceId, Long userId) {
+        Subscription subscription = subscriptionRepository.findActiveByResourceId(resourceId);
+        if (subscription == null) {
+            throw new BizException("当前订阅无效，暂时不能查看环境监测数据");
+        }
+        if (subscription.getTenantUserId() == null || !subscription.getTenantUserId().equals(userId)) {
+            throw new BizException("只有当前订阅用户本人才能查看环境监测数据");
+        }
     }
 }
