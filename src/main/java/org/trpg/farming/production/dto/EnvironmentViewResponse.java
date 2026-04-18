@@ -1,7 +1,7 @@
 package org.trpg.farming.production.dto;
 
 import lombok.Data;
-import org.trpg.farming.production.entity.EnvironmentSnapshot;
+import org.trpg.farming.production.po.EnvironmentSnapshot;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

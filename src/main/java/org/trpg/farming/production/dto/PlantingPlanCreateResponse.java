@@ -1,7 +1,7 @@
 package org.trpg.farming.production.dto;
 
 import lombok.Data;
-import org.trpg.farming.production.entity.PlantingPlan;
+import org.trpg.farming.production.po.PlantingPlan;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

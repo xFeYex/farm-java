@@ -1,7 +1,7 @@
 package org.trpg.farming.production.dto;
 
 import lombok.Data;
-import org.trpg.farming.production.entity.OrchestrationConfig;
+import org.trpg.farming.production.po.OrchestrationConfig;
 
 import java.time.LocalDateTime;
 import java.util.List;

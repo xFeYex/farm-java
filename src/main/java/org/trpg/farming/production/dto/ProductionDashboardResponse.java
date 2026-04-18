@@ -1,8 +1,8 @@
 package org.trpg.farming.production.dto;
 import lombok.Data;
-import org.trpg.farming.production.entity.CameraView;
-import org.trpg.farming.production.entity.EnvironmentSnapshot;
-import org.trpg.farming.production.entity.OrchestrationConfig;
+import org.trpg.farming.production.po.CameraView;
+import org.trpg.farming.production.po.EnvironmentSnapshot;
+import org.trpg.farming.production.po.OrchestrationConfig;
 
 @Data
 public class ProductionDashboardResponse {

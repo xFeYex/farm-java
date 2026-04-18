@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
-import org.trpg.farming.production.entity.OrchestrationConfig;
+import org.trpg.farming.production.po.OrchestrationConfig;
 
 @Mapper
 public interface OrchestrationConfigRepository {

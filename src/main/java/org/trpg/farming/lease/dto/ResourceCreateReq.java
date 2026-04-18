@@ -1,15 +1,17 @@
-package org.trpg.farming.lease.po;
+package org.trpg.farming.lease.dto;
 
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
-public class Resource {
+public class ResourceCreateReq {
 
-    private Long id;
-    private Long ownerUserId;
+    /**
+     * 请求侧统一用 userId 表示当前操作用户。
+     */
+    private Long userId;
+
     private String title;
     private String resourceType;
     private BigDecimal area;
@@ -17,7 +19,4 @@ public class Resource {
     private BigDecimal pricePerMonth;
     private Integer minLeaseMonths;
     private String description;
-    private String status;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }

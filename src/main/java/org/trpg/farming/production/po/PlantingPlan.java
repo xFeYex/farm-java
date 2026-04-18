@@ -1,24 +1,20 @@
-package org.trpg.farming.production.entity;
+package org.trpg.farming.production.po;
 
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
-public class ProductionHarvest {
+public class PlantingPlan {
 
     private Long id;
     private Long resourceId;
     private Long subscriptionId;
     private Long userId;
-    private String productName;
-    private String category;
-    private BigDecimal harvestQuantity;
-    private String unit;
-    private LocalDate harvestDate;
-    private String remark;
+    private String title;
+    private String planContent;
+    private LocalDate planDate;
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

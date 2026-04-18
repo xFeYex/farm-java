@@ -1,4 +1,4 @@
-package org.trpg.farming.production.entity;
+package org.trpg.farming.production.po;
 
 import lombok.Data;
 import java.math.BigDecimal;

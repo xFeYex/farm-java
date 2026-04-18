@@ -2,7 +2,7 @@ package org.trpg.farming.production.repository;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.trpg.farming.production.entity.CameraView;
+import org.trpg.farming.production.po.CameraView;
 
 @Mapper
 public interface CameraViewRepository {

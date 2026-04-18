@@ -1,7 +1,7 @@
 package org.trpg.farming.production.dto;
 
 import lombok.Data;
-import org.trpg.farming.production.entity.ProductionHarvest;
+import org.trpg.farming.production.po.ProductionHarvest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

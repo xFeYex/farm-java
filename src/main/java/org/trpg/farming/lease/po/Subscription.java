@@ -1,4 +1,4 @@
-package org.trpg.farming.production.entity;
+package org.trpg.farming.lease.po;
 
 import lombok.Data;
 
@@ -6,16 +6,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
-public class PlantingPlan {
+public class Subscription {
 
     private Long id;
     private Long resourceId;
-    private Long subscriptionId;
-    private Long userId;
-    private String title;
-    private String planContent;
-    private LocalDate planDate;
+    private Long tenantUserId;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private String status;
+    private LocalDateTime cancelledAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

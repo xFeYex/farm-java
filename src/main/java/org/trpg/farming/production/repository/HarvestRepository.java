@@ -3,7 +3,7 @@ package org.trpg.farming.production.repository;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
-import org.trpg.farming.production.entity.ProductionHarvest;
+import org.trpg.farming.production.po.ProductionHarvest;
 
 @Mapper
 public interface HarvestRepository {
