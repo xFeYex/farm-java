@@ -6,6 +6,8 @@ import org.springframework.util.StringUtils;
 import org.trpg.farming.production.common.BizException;
 import org.trpg.farming.production.dto.PlantingPlanCreateReq;
 import org.trpg.farming.production.dto.PlantingPlanCreateResponse;
+import org.trpg.farming.production.dto.PlantingPlanListReq;
+import org.trpg.farming.production.dto.PlantingPlanPageResponse;
 import org.trpg.farming.production.po.PlantingPlan;
 import org.trpg.farming.production.po.Subscription;
 import org.trpg.farming.production.repository.PlantingPlanRepository;
@@ -13,6 +15,7 @@ import org.trpg.farming.production.repository.SubscriptionRepository;
 import org.trpg.farming.production.service.PlantingPlanService;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +39,25 @@ public class PlantingPlanServiceImpl implements PlantingPlanService {
         return PlantingPlanCreateResponse.from(plantingPlan);
     }
 
+    @Override
+    public PlantingPlanPageResponse listPlans(Long resourceId, PlantingPlanListReq request) {
+        PlantingPlanListReq normalizedRequest = normalizeListRequest(request);
+
+        Subscription subscription = validateSubscriptionAccess(resourceId, normalizedRequest.getUserId());
+        long total = plantingPlanRepository.countByResourceIdAndSubscriptionId(resourceId, subscription.getId());
+        if (total <= 0) {
+            return PlantingPlanPageResponse.of(0, List.of());
+        }
+
+        int offset = (normalizedRequest.getPage() - 1) * normalizedRequest.getPageSize();
+        List<PlantingPlan> plans = plantingPlanRepository.pageQueryByResourceIdAndSubscriptionId(
+                resourceId,
+                subscription.getId(),
+                offset,
+                normalizedRequest.getPageSize());
+        return PlantingPlanPageResponse.of(total, plans);
+    }
+
     private void validateCreateRequest(PlantingPlanCreateReq request) {
         // 这里做最基础的参数校验，先保证接口不会收进一条空计划。
         if (request == null) {
@@ -56,6 +78,34 @@ public class PlantingPlanServiceImpl implements PlantingPlanService {
         if (request.getPlanDate() == null) {
             throw new BizException("计划日期不能为空");
         }
+    }
+
+    /**
+     * 计划列表查询只需要当前用户身份和基础分页参数。
+     */
+    private PlantingPlanListReq normalizeListRequest(PlantingPlanListReq request) {
+        if (request == null) {
+            throw new BizException("请求参数不能为空");
+        }
+        if (request.getUserId() == null || request.getUserId() <= 0) {
+            throw new BizException("userId 非法");
+        }
+
+        int page = request.getPage() == null ? 1 : request.getPage();
+        int pageSize = request.getPageSize() == null ? 10 : request.getPageSize();
+        if (page <= 0) {
+            throw new BizException("page 必须大于 0");
+        }
+        if (pageSize <= 0) {
+            throw new BizException("pageSize 必须大于 0");
+        }
+        if (pageSize > 100) {
+            throw new BizException("pageSize 不能超过 100");
+        }
+
+        request.setPage(page);
+        request.setPageSize(pageSize);
+        return request;
     }
 
     private Subscription validateSubscriptionAccess(Long resourceId, Long userId) {

@@ -13,6 +13,8 @@ import org.trpg.farming.lease.dto.ResourceListReq;
 import org.trpg.farming.lease.dto.ResourcePageResponse;
 import org.trpg.farming.lease.dto.ResourceOffShelfReq;
 import org.trpg.farming.lease.dto.ResourceOffShelfResponse;
+import org.trpg.farming.lease.dto.ResourceUpdateReq;
+import org.trpg.farming.lease.dto.ResourceUpdateResponse;
 import org.trpg.farming.lease.po.Resource;
 
 import java.math.BigDecimal;
@@ -44,6 +46,26 @@ public class ResourceService {
      * 详情页先返回资源基础信息。
      * 当前阶段不额外拼发布者资料和“我的订阅状态”，避免把后续流程提前耦合进来。
      */
+    /**
+     * 缂栬緫璧勬簮鏄€滃彂甯?鍚庣画淇濆瓨鈥濈殑姝ｅ紡鍏ュ彛锛屽墠绔彲浠ョ洿鎺ュ鐢ㄥ彂甯冭〃鍗曘€?
+     */
+    public ResourceUpdateResponse updateResource(Long id, ResourceUpdateReq request) {
+        validateUpdateRequest(id, request);
+
+        Resource resource = loadResource(id);
+        if (resource.getOwnerUserId() == null || !resource.getOwnerUserId().equals(request.getUserId())) {
+            throw new BizException("鍙湁鍙戝竷鑰呮湰浜烘墠鑳界紪杈戣祫婧?");
+        }
+
+        applyUpdateRequest(resource, request);
+
+        int affectedRows = resourceRepository.updateEditableFieldsById(resource);
+        if (affectedRows != 1) {
+            throw new BizException("缂栬緫璧勬簮澶辫触浜嗭紝璇风◢鍚庡啀璇?");
+        }
+        return ResourceUpdateResponse.from(resource);
+    }
+
     public ResourceDetailResponse getResourceDetail(Long id) {
         if (id == null || id <= 0) {
             throw new BizException("资源 ID 非法");
@@ -159,6 +181,28 @@ public class ResourceService {
     /**
      * “我的发布”查询阶段只校验用户身份和基础分页参数。
      */
+    /**
+     * 缂栬緫璧勬簮闃舵闇€瑕佹牎楠屽綋鍓嶈祫婧?ID銆佹搷浣滀汉锛屼互鍙婅〃鍗曞彲缂栬緫瀛楁銆?
+     */
+    private void validateUpdateRequest(Long id, ResourceUpdateReq request) {
+        if (id == null || id <= 0) {
+            throw new BizException("璧勬簮 ID 闈炴硶");
+        }
+        if (request == null) {
+            throw new BizException("璇锋眰浣撲笉鑳戒负绌?");
+        }
+        if (request.getUserId() == null || request.getUserId() <= 0) {
+            throw new BizException("userId 闈炴硶");
+        }
+        validateEditableFields(
+                request.getTitle(),
+                request.getResourceType(),
+                request.getArea(),
+                request.getLocationDesc(),
+                request.getPricePerMonth(),
+                request.getMinLeaseMonths());
+    }
+
     private MyResourceListReq normalizeMyResourceListRequest(MyResourceListReq request) {
         if (request == null) {
             throw new BizException("查询参数不能为空");
@@ -262,6 +306,50 @@ public class ResourceService {
 
     private String normalizeType(String type) {
         return StringUtils.hasText(type) ? type.trim() : null;
+    }
+
+    /**
+     * 缂栬緫鏃跺彧鏇存柊鍓嶇琛ㄥ崟鍙淮鎶ょ殑鍩虹瀛楁锛岃祫婧愮姸鎬佷繚鎸佸師鏍枫€?
+     */
+    private void applyUpdateRequest(Resource resource, ResourceUpdateReq request) {
+        resource.setTitle(request.getTitle().trim());
+        resource.setResourceType(request.getResourceType().trim());
+        resource.setArea(request.getArea());
+        resource.setLocationDesc(request.getLocationDesc().trim());
+        resource.setPricePerMonth(request.getPricePerMonth());
+        resource.setMinLeaseMonths(request.getMinLeaseMonths());
+        resource.setDescription(normalizeDescription(request.getDescription()));
+        resource.setUpdatedAt(LocalDateTime.now());
+    }
+
+    /**
+     * 发布和编辑共用同一套可编辑字段校验规则，避免两个接口行为不一致。
+     */
+    private void validateEditableFields(
+            String title,
+            String resourceType,
+            BigDecimal area,
+            String locationDesc,
+            BigDecimal pricePerMonth,
+            Integer minLeaseMonths) {
+        if (!StringUtils.hasText(title)) {
+            throw new BizException("鏍囬涓嶈兘涓虹┖");
+        }
+        if (!StringUtils.hasText(resourceType)) {
+            throw new BizException("璧勬簮绫诲瀷涓嶈兘涓虹┖");
+        }
+        if (area == null || !isPositive(area)) {
+            throw new BizException("闈㈢Н蹇呴』澶т簬 0");
+        }
+        if (!StringUtils.hasText(locationDesc)) {
+            throw new BizException("浣嶇疆鎻忚堪涓嶈兘涓虹┖");
+        }
+        if (pricePerMonth == null || !isPositive(pricePerMonth)) {
+            throw new BizException("鏈堢閲戝繀椤诲ぇ浜?0");
+        }
+        if (minLeaseMonths == null || minLeaseMonths <= 0) {
+            throw new BizException("鏈€鐭鏈熷繀椤诲ぇ浜?0");
+        }
     }
 
     private boolean isPositive(BigDecimal value) {

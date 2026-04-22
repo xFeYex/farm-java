@@ -6,6 +6,8 @@ import org.springframework.util.StringUtils;
 import org.trpg.farming.production.common.BizException;
 import org.trpg.farming.production.dto.HarvestCreateReq;
 import org.trpg.farming.production.dto.HarvestCreateResponse;
+import org.trpg.farming.production.dto.HarvestListReq;
+import org.trpg.farming.production.dto.HarvestPageResponse;
 import org.trpg.farming.production.po.ProductionHarvest;
 import org.trpg.farming.production.po.Subscription;
 import org.trpg.farming.production.repository.HarvestRepository;
@@ -14,6 +16,7 @@ import org.trpg.farming.production.service.HarvestService;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +38,25 @@ public class HarvestServiceImpl implements HarvestService {
         }
 
         return HarvestCreateResponse.from(harvest);
+    }
+
+    @Override
+    public HarvestPageResponse listHarvests(Long resourceId, HarvestListReq request) {
+        HarvestListReq normalizedRequest = normalizeListRequest(request);
+
+        Subscription subscription = validateSubscriptionAccess(resourceId, normalizedRequest.getUserId());
+        long total = harvestRepository.countByResourceIdAndSubscriptionId(resourceId, subscription.getId());
+        if (total <= 0) {
+            return HarvestPageResponse.of(0, List.of());
+        }
+
+        int offset = (normalizedRequest.getPage() - 1) * normalizedRequest.getPageSize();
+        List<ProductionHarvest> harvests = harvestRepository.pageQueryByResourceIdAndSubscriptionId(
+                resourceId,
+                subscription.getId(),
+                offset,
+                normalizedRequest.getPageSize());
+        return HarvestPageResponse.of(total, harvests);
     }
 
     private void validateCreateRequest(HarvestCreateReq request) {
@@ -69,6 +91,34 @@ public class HarvestServiceImpl implements HarvestService {
         if (StringUtils.hasText(request.getRemark()) && request.getRemark().trim().length() > 500) {
             throw new BizException("remark 不要超过 500 个字");
         }
+    }
+
+    /**
+     * 收获记录列表查询只需要当前用户身份和基础分页参数。
+     */
+    private HarvestListReq normalizeListRequest(HarvestListReq request) {
+        if (request == null) {
+            throw new BizException("请求参数不能为空");
+        }
+        if (request.getUserId() == null || request.getUserId() <= 0) {
+            throw new BizException("userId 非法");
+        }
+
+        int page = request.getPage() == null ? 1 : request.getPage();
+        int pageSize = request.getPageSize() == null ? 10 : request.getPageSize();
+        if (page <= 0) {
+            throw new BizException("page 必须大于 0");
+        }
+        if (pageSize <= 0) {
+            throw new BizException("pageSize 必须大于 0");
+        }
+        if (pageSize > 100) {
+            throw new BizException("pageSize 不能超过 100");
+        }
+
+        request.setPage(page);
+        request.setPageSize(pageSize);
+        return request;
     }
 
     private Subscription validateSubscriptionAccess(Long resourceId, Long userId) {

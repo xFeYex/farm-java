@@ -172,6 +172,23 @@ public interface ResourceRepository {
     int updateById(Resource resource);
 
     /**
+     * 缂栬緫璧勬簮鏃舵洿鏂版爣棰樸€佺被鍨嬨€侀潰绉€佷綅缃€佷环鏍煎拰璧勬簮璇存槑绛夊彲缂栬緫瀛楁銆?
+     */
+    @Update("""
+            UPDATE resource
+            SET title = #{title},
+                resource_type = #{resourceType},
+                area = #{area},
+                location_desc = #{locationDesc},
+                price_per_month = #{pricePerMonth},
+                min_lease_months = #{minLeaseMonths},
+                description = #{description},
+                updated_at = #{updatedAt}
+            WHERE id = #{id}
+            """)
+    int updateEditableFieldsById(Resource resource);
+
+    /**
      * “我的发布”列表只统计当前发布者自己名下的资源。
      */
     @Select("""

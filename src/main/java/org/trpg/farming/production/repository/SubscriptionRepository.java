@@ -16,8 +16,9 @@ public interface SubscriptionRepository {
     @Results(id = "subscriptionResultMap", value = {
             @Result(property = "resourceId", column = "resource_id"),
             @Result(property = "tenantUserId", column = "tenant_user_id"),
-            @Result(property = "startTime", column = "start_time"),
-            @Result(property = "endTime", column = "end_time"),
+            @Result(property = "startDate", column = "start_date"),
+            @Result(property = "endDate", column = "end_date"),
+            @Result(property = "cancelledAt", column = "cancelled_at"),
             @Result(property = "createdAt", column = "created_at"),
             @Result(property = "updatedAt", column = "updated_at")
     })
@@ -26,9 +27,10 @@ public interface SubscriptionRepository {
                 id,
                 resource_id,
                 tenant_user_id,
+                start_date,
+                end_date,
                 status,
-                start_time,
-                end_time,
+                cancelled_at,
                 created_at,
                 updated_at
             FROM subscription
